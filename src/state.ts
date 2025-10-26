@@ -5,7 +5,7 @@ const state = Annotation.Root({
     ...MessagesAnnotation.spec,
     
     /** Custom state */
-    next_action: Annotation<string>,
+    nextRepresentative: Annotation<string>,
 });
 
 export default state;

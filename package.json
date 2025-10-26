@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --watch dist/index.js",
+    "start": "node --watch src/graph.ts",
     "dev": "tsc && node --watch dist/index.js",
     "watch": "tsc --watch"
   },
