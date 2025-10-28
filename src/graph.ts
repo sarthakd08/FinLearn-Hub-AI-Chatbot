@@ -1,6 +1,14 @@
 import { StateGraph } from "@langchain/langgraph";
 import state from "./state.js";
 import { llm } from "./model.js";
+import { getCoursesTool } from "./tools.js";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
+
+const marketingTools = [getCoursesTool];
+const marketingToolNode = new ToolNode(marketingTools);
+const learningTools = [getCoursesTool];
+const learningToolNode = new ToolNode(learningTools);
+
 
 /* Langgraph Nodes (Functions)*/
 async function frontDeskSupportAgent(stateInput: typeof state.State) {
@@ -59,6 +67,24 @@ async function frontDeskSupportAgent(stateInput: typeof state.State) {
 
 function marketingSupportAgent(stateInput: typeof state.State) {
     console.log("Marketing Support Agent Called");
+    const llmWithTools = llm.bindTools(marketingTools);
+
+    const SYSTEM_PROMPT = `You are part of the Marketing Team at LearnerHub, an ed-tech company that helps software developers excel in their careers through practical web development and Generative AI courses. You specialize in handling questions about promo codes, discounts, offers, and special campaigns. Answer clearly, concisely, and in a friendly manner. For queries outside promotions (course content, learning), politely redirect the student to the correct team.
+            Important: Answer only using given context, else say I don't have enough information about it.
+            `
+
+    let trimmedHistory = stateInput.messages as any[];
+    if(trimmedHistory.at(-1).type == 'ai') {
+        trimmedHistory = trimmedHistory.slice(0, -1)
+    }
+    const response = llmWithTools.invoke([
+        {
+            role: "system",
+            content: SYSTEM_PROMPT
+        },
+        ...trimmedHistory,
+    ])
+
     return stateInput;
 }
 
@@ -90,6 +116,8 @@ const graph = new StateGraph(state);
 graph.addNode("frontDeskSupport", frontDeskSupportAgent)
         .addNode("marketingSupport", marketingSupportAgent)
         .addNode("learningSupport", learningSupportAgent)
+        .addNode("marketingTools", marketingToolNode)
+        .addNode("learningTools", learningToolNode)
         .addEdge("__start__", "frontDeskSupport")
         .addConditionalEdges("frontDeskSupport", whoIsNext, {
             marketingSupport: "marketingSupport",
