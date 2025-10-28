@@ -36,6 +36,7 @@ async function frontDeskSupportAgent(stateInput: typeof state.State) {
                 content : CATEGORIZATION_SYSTEM_PROMPT
             },
             ...stateInput.messages,
+            supportResponse,
             {
                 role: 'user',
                 content : CATEGORIZATION_HUMAN_PROMPT
@@ -107,14 +108,14 @@ const main = async () => {
         messages: [
             {
                 role: "user",
-                content: "Hi",
+                content: "Hi,I need to know about the courses which i can take to improve my skills as 7 years experienced developer?",
             },
         ],
     });
 
     for await (const chunk of stream) {
         console.log("--------STEP-----------------");
-        console.log(chunk);
+        console.log('I am a stream chunk:: ', chunk);
         console.log("--------STEP-----------------");
     }
 

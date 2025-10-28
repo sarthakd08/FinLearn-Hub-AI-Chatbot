@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --watch src/graph.ts",
-    "dev": "tsc && node --watch dist/index.js",
-    "watch": "tsc --watch"
+    "start": "node dist/index.js",
+    "start:graph": "node dist/graph.js",
+    "dev": "tsc && node  dist/index.js",
+    "dev:graph": "tsc && node  dist/graph.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +19,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@langchain/core": "^1.0.2",
     "@langchain/groq": "^1.0.0",
-    "@langchain/langgraph": "^1.0.1"
+    "@langchain/langgraph": "^1.0.1",
+    "dotenv": "^17.2.3"
   }
 }
