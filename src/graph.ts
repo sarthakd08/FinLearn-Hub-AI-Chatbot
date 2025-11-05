@@ -13,7 +13,7 @@ const learningToolNode = new ToolNode(learningTools);
 
 /* Langgraph Nodes (Functions)*/
 async function frontDeskSupportAgent(stateInput: typeof state.State) {
-    const SYSTEM_PROMPT = `You are frontline support staff for LearnerHub, an ed-tech company that helps software developers excel in their careers through practical web development and Generative AI courses.
+    const SYSTEM_PROMPT = `You are frontline support staff for FinLearn Hub, an ed-tech company that helps financial professionals excel in their careers through practical courses. Also certifications for the courses are available.
             Be concise in your responses.
             You can chat with students and help them with basic questions, but if the student is having a marketing or learning support query,
             do not try to answer the question directly or gather information.
