@@ -1,4 +1,4 @@
-import { StateGraph } from "@langchain/langgraph";
+import { MemorySaver, StateGraph } from "@langchain/langgraph";
 import state from "./state.js";
 import { llm } from "./model.js";
 import { getCoursesTool, knowledgeBaseRetrieverTool } from "./tools.js";
@@ -197,7 +197,7 @@ graph.addNode("frontDeskSupport", frontDeskSupportAgent)
         //     __end__: "__end__",
         // })
 
-const app = graph.compile();
+const app = graph.compile({checkpointer: new MemorySaver()});
 
 
 const main = async () => {
@@ -210,7 +210,7 @@ const main = async () => {
                 // content : "Hi, Can you share me the contact support email of your firm?"
             },
         ],
-    });
+    }, {configurable: {thread_id: "1"}});
 
     for await (const chunk of stream) {
         console.log("--------STEP-----------------");
