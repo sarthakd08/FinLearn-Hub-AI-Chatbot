@@ -1,7 +1,9 @@
 import { tool } from "@langchain/core/tools";
+import { createRetrieverTool } from "@langchain/classic/tools/retriever";
+import { vectorStore } from "./indexDocs.js";
 
 
-export const getCoursesTool = tool(
+const getCoursesTool = tool(
     async () => {
         /* TODO: Get the offers and discounts from the database via api call */
         return JSON.stringify([{
@@ -31,3 +33,19 @@ export const getCoursesTool = tool(
         description: "Use this tool to query the offers and discounts available for the user",
     }
 );
+
+const retriever = vectorStore.asRetriever();
+
+const knowledgeBaseRetrieverTool = createRetrieverTool(
+    retriever,
+    {
+        name: "retrieve_learning_knowledge_base",
+        description: "Search and return information about the courses, certifications, FAQs, career doubts and other learning resources available at FinLearn Hub",
+    }
+)
+
+
+export {
+    getCoursesTool,
+    knowledgeBaseRetrieverTool,
+}
