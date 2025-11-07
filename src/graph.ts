@@ -1,13 +1,14 @@
 import { StateGraph } from "@langchain/langgraph";
 import state from "./state.js";
 import { llm } from "./model.js";
-import { getCoursesTool } from "./tools.js";
+import { getCoursesTool, knowledgeBaseRetrieverTool } from "./tools.js";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { AIMessage } from "@langchain/core/messages";
 
 const marketingTools = [getCoursesTool];
 const marketingToolNode = new ToolNode(marketingTools);
-const learningTools = [getCoursesTool];
+
+const learningTools = [knowledgeBaseRetrieverTool];
 const learningToolNode = new ToolNode(learningTools);
 
 
@@ -68,9 +69,10 @@ async function frontDeskSupportAgent(stateInput: typeof state.State) {
 
 async function marketingSupportAgent(stateInput: typeof state.State) {
     console.log("Marketing Support Agent Called");
+
     const llmWithTools = llm.bindTools(marketingTools);
 
-    const SYSTEM_PROMPT = `You are part of the Marketing Team at LearnerHub, an ed-tech company that helps software developers excel in their careers through practical web development and Generative AI courses. You specialize in handling questions about promo codes, discounts, offers, and special campaigns. Answer clearly, concisely, and in a friendly manner. For queries outside promotions (course content, learning), politely redirect the student to the correct team.
+    const SYSTEM_PROMPT = `You are part of the Marketing Team at FinLearn Hub, an ed-tech company that helps financial professionals excel in their careers through practical courses. Also certifications for the courses are available. You specialize in handling questions about promo codes, discounts, offers, and special campaigns. Answer clearly, concisely, and in a friendly manner. For queries outside promotions (course content, learning), politely redirect the student to the correct team.
             Important: Answer only using given context, else say I don't have enough information about it.
             Note that marketing tools are available to you, so you can use them to get the information you need.
             `
@@ -92,9 +94,32 @@ async function marketingSupportAgent(stateInput: typeof state.State) {
     };
 }
 
-function learningSupportAgent(stateInput: typeof state.State) {
+async function learningSupportAgent(stateInput: typeof state.State) {
     console.log("Learning Support Agent Called");
-    return stateInput;
+
+    const llmWithTools = llm.bindTools(learningTools);
+
+    const SYSTEM_PROMPT = `You are part of the Learning Support Team at FinLearn Hub, an ed-tech company that helps financial professionals excel in their careers through practical courses. Also certifications for the courses are available. 
+        You assist students with questions about available courses, syllabus coverage, learning paths, and study strategies. 
+        Keep your answers concise, clear, and supportive. Strictly use information from retrieved context for answering 
+        queries. If the query is about learning issues, politely redirect the student to the respective team. 
+        Important: Call retrieve_learning_knowledge_base max 3 times if the tool result is not relevant to original query.`
+
+    let trimmedHistory = stateInput.messages as any[];
+    if(trimmedHistory.at(-1).type == 'ai') {
+        trimmedHistory = trimmedHistory.slice(0, -1)
+    }
+
+    const learningResponse = await llmWithTools.invoke([
+        {
+            role: "system",
+            content: SYSTEM_PROMPT
+        },
+        ...trimmedHistory,
+    ])
+    return {
+        messages: [learningResponse]
+    };
 }
 
 
@@ -123,6 +148,16 @@ function whoIsNextForMarketingSupport(stateInput: typeof state.State) {
     }
 }
 
+function whoIsNextForLearningSupport(stateInput: typeof state.State) {
+    const lastMessage = stateInput.messages[stateInput.messages.length - 1] as AIMessage;
+
+    if (lastMessage.type == 'ai' && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
+        return 'learningTools';
+    } else {
+        return '__end__';
+    }
+}
+
 
 /**
  * The Graph
@@ -134,22 +169,23 @@ graph.addNode("frontDeskSupport", frontDeskSupportAgent)
         .addNode("marketingSupport", marketingSupportAgent)
         .addNode("learningSupport", learningSupportAgent)
         .addNode("marketingTools", marketingToolNode)
-        // .addNode("learningTools", learningToolNode)
+        .addNode("learningTools", learningToolNode)
         .addEdge("__start__", "frontDeskSupport")
         .addConditionalEdges("frontDeskSupport", whoIsNextForFrontDeskSupport, {
             marketingSupport: "marketingSupport",
             learningSupport: "learningSupport",
             __end__: "__end__",
         })
-        // todo : remove this once after testing
-        // .addEdge("marketingSupport", "__end__")
-        .addEdge("learningSupport", "__end__")
         .addConditionalEdges("marketingSupport", whoIsNextForMarketingSupport, {
             marketingTools: "marketingTools",
             __end__: "__end__",
         })
         .addEdge("marketingTools", "marketingSupport")
-        // .addConditionalEdges()
+        .addConditionalEdges("learningSupport", whoIsNextForLearningSupport, {
+            learningTools: "learningTools",
+            __end__: "__end__",
+        })
+        .addEdge("learningTools", "learningSupport")
         // .addConditionalEdges("marketingTools", whoIsNext, {
         //     marketingSupport: "marketingSupport",
         //     learningSupport: "learningSupport",
@@ -171,6 +207,7 @@ const main = async () => {
                 role: "user",
                 // content: "Hi,I need to know about the courses which i can take to improve my skills as 7 years experienced developer?", // Should route to learning support agent
                 content: "Hi, do you have any offers going on?" // Should route to marketing support agent
+                // content : "Hi, Can you share me the contact support email of your firm?"
             },
         ],
     });

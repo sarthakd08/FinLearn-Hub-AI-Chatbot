@@ -52,4 +52,4 @@ export async function indexTheDocument(filePath: string) {
 }
 
 
-indexTheDocument('./src/Docs/FinLearnHub_Dummy_Data.pdf');
+// indexTheDocument('./src/Docs/FinLearnHub_Dummy_Data.pdf');
