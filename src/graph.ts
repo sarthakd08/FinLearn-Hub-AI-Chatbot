@@ -1,3 +1,4 @@
+import readline from 'node:readline/promises'
 import { MemorySaver, StateGraph } from "@langchain/langgraph";
 import state from "./state.js";
 import { llm } from "./model.js";
@@ -201,23 +202,38 @@ const app = graph.compile({checkpointer: new MemorySaver()});
 
 
 const main = async () => {
-    const stream = await app.stream({
-        messages: [
-            {
-                role: "user",
-                // content: "Hi,I need to know about the courses which i can take to improve my skills as 7 years experienced developer?", // Should route to learning support agent
-                content: "Hi, do you have any offers going on?" // Should route to marketing support agent
-                // content : "Hi, Can you share me the contact support email of your firm?"
-            },
-        ],
-    }, {configurable: {thread_id: "1"}});
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
 
-    for await (const chunk of stream) {
-        console.log("--------STEP-----------------");
-        console.log('I am a stream chunk:: ', chunk);
-        console.log("--------STEP-----------------");
+    while (true) {
+
+        const userQuery = await rl.question("You: ");
+
+        if (userQuery.toLowerCase() === 'bye') {
+            break;
+        }
+
+        const state = await app.invoke({
+            messages: [
+                {
+                    role: "user",
+                    content: userQuery,
+                    // content: "Hi,I need to know about the courses which i can take to improve my skills as 7 years experienced developer?", // Should route to learning support agent
+                    // content: "Hi, do you have any offers going on?" // Should route to marketing support agent
+                    // content : "Hi, Can you share me the contact support email of your firm?"
+                },
+            ],
+        }, {configurable: {thread_id: "1"}});
+    
+
+        console.log('Assistant Response:: ', state.messages[state.messages.length - 1].content);
+        
     }
 
+
+    rl.close();
 }
 
 
