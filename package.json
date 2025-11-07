@@ -6,10 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "start:graph": "node dist/graph.js",
-    "dev": "tsc && node  dist/index.js",
-    "dev:graph": "tsc && node  dist/graph.js",
+    "start": "node dist/cli.js",
+    "dev": "tsc && node dist/cli.js",
+    "dev:cli": "tsc && node dist/cli.js",
     "index-docs": "tsc && node dist/indexDocs.js"
   },
   "keywords": [],
