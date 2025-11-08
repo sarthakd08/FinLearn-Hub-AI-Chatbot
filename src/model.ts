@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /**
- * Initialise the llm model
+ * Using OpenAI llm model via Groq Client
  */
 export const llm = new ChatGroq({
   model: "openai/gpt-oss-120b",

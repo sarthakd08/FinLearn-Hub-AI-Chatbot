@@ -6,6 +6,8 @@ export function whoIsNextForFrontDeskSupport(stateInput: typeof state.State) {
         return "marketingSupport";
     } else if (stateInput.nextRepresentative.includes("LEARNING")) {
         return "learningSupport";
+    } else if (stateInput.nextRepresentative.includes("REFUND")) {
+        return "refundProcessingSupport";
     } else if (stateInput.nextRepresentative.includes("RESPOND")) {
         return "__end__";
     } else {
@@ -28,6 +30,16 @@ export function whoIsNextForLearningSupport(stateInput: typeof state.State) {
 
     if (lastMessage.type == 'ai' && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
         return 'learningTools';
+    } else {
+        return '__end__';
+    }
+}
+
+export function whoIsNextForRefundSupport(stateInput: typeof state.State) {
+    const lastMessage = stateInput.messages[stateInput.messages.length - 1] as AIMessage;
+
+    if (lastMessage.type == 'ai' && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
+        return 'refundTools';
     } else {
         return '__end__';
     }
