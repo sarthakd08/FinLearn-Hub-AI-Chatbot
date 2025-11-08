@@ -1,34 +1,14 @@
 import { tool } from "@langchain/core/tools";
 import { createRetrieverTool } from "@langchain/classic/tools/retriever";
 import { vectorStore } from "./indexDocs.js";
-import { gmailEmails } from "./dummyData.js";
+import { gmailEmails, courseCoupons } from "./dummyData.js";
 import { z } from "zod";
 
 
 const getCoursesTool = tool(
     async () => {
         /* TODO: Get the offers and discounts from the database via api call */
-        return JSON.stringify([{
-            "code": "EARLY_BIRDS_DISCOUNT",
-            "discount_percentage": "30",
-            "description": "This is a discount code for the early birds",
-            "valid_from": "2025-01-01",
-            "valid_to": "2025-01-01",
-            "usage_count": 100,
-            "usage_limit": 100,
-            "usage_limit_per_user": 1,
-            "usage_limit_per_user_per_code": 1,
-        }, {
-            "code": "DIWALI_DISCOUNT",
-            "discount_percentage": "20",
-            "description": "This is a discount code for the diwali",
-            "valid_from": "2025-01-01",
-            "valid_to": "2025-01-01",
-            "usage_count": 100,
-            "usage_limit": 100,
-            "usage_limit_per_user": 1,
-        }])
-
+        return JSON.stringify(courseCoupons);
     }, 
     {   
         name: "offers_query_tool",
@@ -49,6 +29,8 @@ const knowledgeBaseRetrieverTool = createRetrieverTool(
 const getEmailsTool = tool(
     async () => {
         // TODO: Get the emails from the inbox via api call
+        console.log("Getting emails from the inbox");
+        
         return JSON.stringify(gmailEmails);
     },
     {
@@ -60,6 +42,8 @@ const getEmailsTool = tool(
 const refundProcessingTool = tool(
     async ({emails}) => {
         // TODO: Process the refund for the given emails via api call to Backend
+        console.log("Processing refunds for the given emails: ", emails);
+        
         return "All Refunds have been processed successfully";
     },
 

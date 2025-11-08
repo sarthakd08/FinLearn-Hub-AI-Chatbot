@@ -1,3 +1,37 @@
+export const courseCoupons = [
+    {
+        code: "EARLY_BIRDS_DISCOUNT",
+        discount_percentage: "30",
+        description: "This is a discount code for the early birds",
+        valid_from: "2025-01-01",
+        valid_to: "2025-01-31",
+        usage_count: 100,
+        usage_limit: 100,
+        usage_limit_per_user: 1,
+        usage_limit_per_user_per_code: 1,
+    },
+    {
+        code: "DIWALI_DISCOUNT",
+        discount_percentage: "20",
+        description: "This is a discount code for the diwali festival",
+        valid_from: "2025-01-01",
+        valid_to: "2025-01-15",
+        usage_count: 100,
+        usage_limit: 100,
+        usage_limit_per_user: 1,
+    },
+    {
+        code: "WINTER25",
+        discount_percentage: "25",
+        description: "Winter special discount for all courses",
+        valid_from: "2025-01-01",
+        valid_to: "2025-02-28",
+        usage_count: 50,
+        usage_limit: 200,
+        usage_limit_per_user: 1,
+    }
+];
+
 export const gmailEmails = {
     messages: [
       {
