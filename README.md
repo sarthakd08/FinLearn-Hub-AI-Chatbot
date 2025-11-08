@@ -7,6 +7,8 @@ A modular multi-agent support system built with LangGraph that intelligently rou
 - **Intelligent Routing**: Front desk agent classifies user intent and routes to appropriate team
 - **Marketing Support**: Handles promotional queries, offers, and discounts
 - **Learning Support**: Assists with course information using RAG-based knowledge retrieval
+- **Refund Processing**: Automated refund handling with human-in-the-loop approval
+- **Human-in-the-Loop**: Built-in approval system for sensitive operations (refunds, payments, etc.)
 - **Tool Integration**: Agents can use tools to fetch real-time information
 - **Conversation Memory**: Maintains context across multiple turns
 - **Modular Architecture**: Clean separation of concerns for easy maintenance and extension
@@ -15,18 +17,22 @@ A modular multi-agent support system built with LangGraph that intelligently rou
 
 ```
 src/
-├── agents/              # Specialized agent implementations
-│   ├── frontDeskAgent.ts    # Routes to appropriate team
-│   ├── marketingAgent.ts    # Marketing support with promo tools
-│   └── learningAgent.ts     # Learning support with knowledge base
-├── routing/             # Conditional edge functions
-│   └── edgeFunctions.ts     # Route logic for the graph
-├── graph.ts            # Graph construction and compilation
-├── cli.ts              # Interactive CLI interface
-├── state.ts            # State definition
-├── model.ts            # LLM configuration
-├── tools.ts            # Tool definitions
-└── indexDocs.ts        # Document indexing utility
+├── agents/                  # Specialized agent implementations
+│   ├── frontDeskAgent.ts        # Routes to appropriate team
+│   ├── marketingAgent.ts        # Marketing support with promo tools
+│   ├── learningAgent.ts         # Learning support with knowledge base
+│   └── refundProcessingAgent.ts # Refund processing with HITL
+├── routing/                 # Conditional edge functions
+│   └── edgeFunctions.ts         # Route logic for the graph
+├── utils/                   # Utility functions
+│   └── humanApproval.ts         # Human-in-the-loop approval logic
+├── graph.ts                # Graph construction and compilation
+├── cli.ts                  # Interactive CLI interface
+├── state.ts                # State definition
+├── model.ts                # LLM configuration
+├── tools.ts                # Tool definitions
+├── dummyData.ts            # Mock data for development
+└── indexDocs.ts            # Document indexing utility
 ```
 
 ## 📊 Flow Diagram
@@ -34,11 +40,27 @@ src/
 ```
 User Input
     ↓
-Front Desk Agent
+Front Desk Agent (Intent Classification)
     ↓
     ├─→ Marketing Support → Marketing Tools ↺
     ├─→ Learning Support → Learning Tools ↺
+    ├─→ Refund Processing → ⏸️  HITL Approval → Refund Tools ↺
     └─→ End (conversational response)
+```
+
+### Human-in-the-Loop Flow
+```
+Refund Request
+    ↓
+Refund Agent analyzes request
+    ↓
+Agent calls refund tool
+    ↓
+⏸️  INTERRUPT - Show tool details
+    ↓
+User Decision:
+    ├─→ 1. Approve → Execute tool → Confirm completion
+    └─→ 2. Reject  → Cancel operation
 ```
 
 ## 🚀 Quick Start
@@ -82,7 +104,7 @@ npm run build
 ## 🎯 Agent Capabilities
 
 ### Front Desk Agent
-- Classifies user intent (Marketing, Learning, or General)
+- Classifies user intent (Marketing, Learning, Refund, or General)
 - Routes to specialized teams
 - Handles basic conversational queries
 
@@ -96,6 +118,13 @@ npm run build
 - Uses RAG-based retrieval from knowledge base
 - Searches indexed documentation for accurate answers
 
+### Refund Processing Agent
+- Handles refund requests and policy queries
+- Uses `getEmailsTool` to retrieve customer emails
+- Uses `refundProcessingTool` to process refunds (requires approval)
+- **Human-in-the-Loop**: Waits for user approval before executing refunds
+- Provides clear confirmation messages
+
 ## 🔧 Tech Stack
 
 - **Framework**: [LangGraph](https://github.com/langchain-ai/langgraph) (LangChain)
@@ -104,87 +133,51 @@ npm run build
 - **Embeddings**: OpenAI text-embedding-3-small (512 dimensions)
 - **Runtime**: Node.js with TypeScript
 
-## 📝 Example Interaction
+## 📝 Example Interactions
 
+### Marketing Query
 ```
 You: Hi, do you have any offers going on?
-Assistant: [Routes to Marketing Agent]
-Marketing Support Agent Called
 Assistant: Let me check our current offers for you...
+Assistant: We have several active promotions:
+- EARLY_BIRDS_DISCOUNT: 30% off (valid until Jan 31)
+- DIWALI_DISCOUNT: 20% off (valid until Jan 15)
+- WINTER25: 25% off (valid until Feb 28)
+```
 
+### Learning Query
+```
 You: What courses do you offer?
-Assistant: [Routes to Learning Agent]
-Learning Support Agent Called
-Assistant: We offer 5 main courses...
+Assistant: We offer 5 main courses:
+1. Financial Planning Mastery (6 weeks, Beginner-Intermediate)
+2. Mutual Fund Investing Essentials (4 weeks, Beginner)
+3. Stock Market Foundations (8 weeks, Beginner-Intermediate)
+4. Technical Analysis & Trading Strategies (6 weeks, Intermediate-Advanced)
+5. Advanced Wealth Management & Portfolio Optimization (10 weeks, Advanced)
 ```
 
-## 🔌 Adding New Agents
-
-1. Create agent file in `src/agents/`:
-```typescript
-export async function newAgent(stateInput: typeof state.State) {
-    // Agent logic
-    return { messages: [...] };
-}
+### Refund Request with Human-in-the-Loop
 ```
+You: I need to process refunds from my inbox
+Assistant: Let me check the emails and process refunds...
 
-2. Add routing function in `src/routing/edgeFunctions.ts`
+============================================================
+⚠️  SENSITIVE OPERATION - APPROVAL REQUIRED
+============================================================
 
-3. Wire up in `src/graph.ts`:
-```typescript
-import { newAgent } from './agents/newAgent.js';
-// Add node and edges
-```
+🔧 Tool: refund_processing_tool
+📋 Arguments:
+   emails:
+      1. john.doe@example.com
+      2. anita.patel@example.com
 
-## 📚 Documentation
+============================================================
+Options:
+  1. Approve - Continue with operation
+  2. Reject  - Cancel operation
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Detailed architecture documentation
-- **[src/README.md](./src/README.md)**: Source code structure overview
+👤 Your choice (1 or 2): 1
 
-## 🛠️ Development
-
-```bash
-# Build only
-npm run build
-
-# Watch mode (if you add nodemon)
-npm run dev
-
-# Index new documents
-npm run index-docs
-```
-
-## 📦 Project Structure
-
-```
-.
-├── src/                    # Source code
-│   ├── agents/            # Agent implementations
-│   ├── routing/           # Routing logic
-│   └── ...                # Core files
-├── dist/                  # Compiled JavaScript
-├── node_modules/          # Dependencies
-├── package.json           # Project configuration
-├── tsconfig.json          # TypeScript configuration
-├── README.md             # This file
-└── ARCHITECTURE.md       # Architecture documentation
-```
-
-## 🤝 Contributing
-
-This is a modular system designed for easy extension:
-- Add new agents for specialized domains
-- Create new tools for enhanced capabilities
-- Extend routing logic for complex workflows
-
-## 📄 License
-
-ISC
-
-## 👨‍💻 Author
-
-Built with ❤️ using LangGraph and TypeScript
-
----
-
-**Note**: Make sure to configure your `.env` file with the required API keys before running the application.
+============================================================
+✅ APPROVED - Processing refunds...
+============================================================

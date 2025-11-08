@@ -57,7 +57,7 @@ function buildGraph() {
 
     return graph.compile({ 
         checkpointer: new MemorySaver(),
-        // Interrupt before executing refund tools (sensitive operation)
+        // Interrupt before executing refund tools (since its a sensitive operation)
         interruptBefore: ["refundTools"]
     });
 }
