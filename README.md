@@ -35,18 +35,49 @@ src/
 └── indexDocs.ts            # Document indexing utility
 ```
 
-## 📊 Flow Diagram
+## 📊 LangGraph Architecture
 
+![LangGraph Architecture Diagram](./Langraph%20Graph%20of%20the%20App.png)
+
+<details>
+<summary>View as Mermaid Diagram (Click to expand)</summary>
+
+```mermaid
+graph TD
+    Start([START]) --> FrontDesk[Front Desk Support<br/>Intent Classification]
+    
+    FrontDesk -->|MARKETING| Marketing[Marketing Support]
+    FrontDesk -->|LEARNING| Learning[Learning Support]
+    FrontDesk -->|REFUND| Refund[Refund Processing]
+    FrontDesk -->|RESPOND| End([END])
+    
+    Marketing -->|needs tools?| MarketingTools{Marketing Tools<br/>get_available_courses}
+    MarketingTools --> Marketing
+    Marketing -->|complete| End
+    
+    Learning -->|needs tools?| LearningTools{Learning Tools<br/>knowledge_base_retrieval}
+    LearningTools --> Learning
+    Learning -->|complete| End
+    
+    Refund -->|needs tools?| HITL[⏸️  INTERRUPT<br/>Human Approval Required]
+    HITL -->|APPROVE| RefundTools{Refund Tools<br/>process_refunds}
+    HITL -->|REJECT| End
+    RefundTools --> Refund
+    Refund -->|complete| End
+    
+    style Start fill:#a5d8ff
+    style FrontDesk fill:#ffd43b
+    style Marketing fill:#96f2d7
+    style Learning fill:#96f2d7
+    style Refund fill:#96f2d7
+    style MarketingTools fill:#ffc9c9
+    style LearningTools fill:#ffc9c9
+    style RefundTools fill:#ffc9c9
+    style HITL fill:#ffe066,stroke:#c92a2a,stroke-width:3px
+    style End fill:#ffa8a8
 ```
-User Input
-    ↓
-Front Desk Agent (Intent Classification)
-    ↓
-    ├─→ Marketing Support → Marketing Tools ↺
-    ├─→ Learning Support → Learning Tools ↺
-    ├─→ Refund Processing → ⏸️  HITL Approval → Refund Tools ↺
-    └─→ End (conversational response)
-```
+
+</details>
 
 ### Human-in-the-Loop Flow
 ```

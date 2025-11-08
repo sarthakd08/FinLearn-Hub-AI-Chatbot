@@ -138,7 +138,53 @@ graph.compile({
 - **HITL**: Requires human approval before execution
 - Used by refund processing agent
 
+## Visual Architecture
+
+![LangGraph Architecture Diagram](./Langraph%20Graph%20of%20the%20App.png)
+
+<details>
+<summary>View as Mermaid Diagram (Click to expand)</summary>
+
+```mermaid
+graph TD
+    Start([START]) --> FrontDesk[Front Desk Support<br/>Intent Classification]
+    
+    FrontDesk -->|MARKETING| Marketing[Marketing Support Agent]
+    FrontDesk -->|LEARNING| Learning[Learning Support Agent]
+    FrontDesk -->|REFUND| Refund[Refund Processing Agent]
+    FrontDesk -->|RESPOND| End([END])
+    
+    Marketing -->|has tool_calls?| MarketingTools{Marketing Tools<br/>getCoursesTool}
+    MarketingTools -->|execute| Marketing
+    Marketing -->|no tool_calls| End
+    
+    Learning -->|has tool_calls?| LearningTools{Learning Tools<br/>knowledgeBaseRetrieverTool}
+    LearningTools -->|execute| Learning
+    Learning -->|no tool_calls| End
+    
+    Refund -->|has tool_calls?| HITL[⏸️  INTERRUPT<br/>Human-in-the-Loop<br/>Approval Required]
+    HITL -->|1. APPROVE| RefundTools{Refund Tools<br/>getEmailsTool<br/>refundProcessingTool}
+    HITL -->|2. REJECT| End
+    RefundTools -->|execute| Refund
+    Refund -->|no tool_calls| End
+    
+    style Start fill:#a5d8ff,stroke:#1971c2,stroke-width:2px
+    style FrontDesk fill:#ffd43b,stroke:#f08c00,stroke-width:2px
+    style Marketing fill:#96f2d7,stroke:#12b886,stroke-width:2px
+    style Learning fill:#96f2d7,stroke:#12b886,stroke-width:2px
+    style Refund fill:#96f2d7,stroke:#12b886,stroke-width:2px
+    style MarketingTools fill:#ffc9c9,stroke:#fa5252,stroke-width:2px
+    style LearningTools fill:#ffc9c9,stroke:#fa5252,stroke-width:2px
+    style RefundTools fill:#ffc9c9,stroke:#fa5252,stroke-width:2px
+    style HITL fill:#ffe066,stroke:#c92a2a,stroke-width:4px
+    style End fill:#ffa8a8,stroke:#c92a2a,stroke-width:2px
+```
+
+</details>
+
 ## Data Flow
+
+### Text Representation
 
 ```
 1. User Input
