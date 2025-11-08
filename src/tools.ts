@@ -1,6 +1,8 @@
 import { tool } from "@langchain/core/tools";
 import { createRetrieverTool } from "@langchain/classic/tools/retriever";
 import { vectorStore } from "./indexDocs.js";
+import { gmailEmails } from "./dummyData.js";
+import { z } from "zod";
 
 
 const getCoursesTool = tool(
@@ -44,8 +46,36 @@ const knowledgeBaseRetrieverTool = createRetrieverTool(
     }
 )
 
+const getEmailsTool = tool(
+    async () => {
+        // TODO: Get the emails from the inbox via api call
+        return JSON.stringify(gmailEmails);
+    },
+    {
+        name: "get_emails_tool",
+        description: "Use this tool to get the emails from the inbox",
+    }
+)
+
+const refundProcessingTool = tool(
+    async ({emails}) => {
+        // TODO: Process the refund for the given emails via api call to Backend
+        return "All Refunds have been processed successfully";
+    },
+
+    {
+        name: "refund_processing_tool",
+        description: "Process the refund for the given emails",
+        schema: z.object({
+            emails: z.array(z.string()).describe("List of emails which needs to be processed"),
+        }),
+    }
+)
+
 
 export {
     getCoursesTool,
     knowledgeBaseRetrieverTool,
+    getEmailsTool,
+    refundProcessingTool,
 }
