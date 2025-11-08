@@ -38,10 +38,12 @@ export function whoIsNextForLearningSupport(stateInput: typeof state.State) {
 export function whoIsNextForRefundSupport(stateInput: typeof state.State) {
     const lastMessage = stateInput.messages[stateInput.messages.length - 1] as AIMessage;
 
+    // Check if this is an AI message with tool calls (need to execute tools)
     if (lastMessage.type == 'ai' && lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
         return 'refundTools';
-    } else {
-        return '__end__';
     }
+    
+    // Otherwise, we're done
+    return '__end__';
 }
 

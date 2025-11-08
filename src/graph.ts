@@ -55,7 +55,11 @@ function buildGraph() {
         })
         .addEdge("refundTools", "refundProcessingSupport");
 
-    return graph.compile({ checkpointer: new MemorySaver() });
+    return graph.compile({ 
+        checkpointer: new MemorySaver(),
+        // Interrupt before executing refund tools (sensitive operation)
+        interruptBefore: ["refundTools"]
+    });
 }
 
 export const app = buildGraph();
